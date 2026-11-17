@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    // Component props flow through the harness's derived slot-props types,
+    // which only fully resolve inside the harness monorepo. Outside it some
+    // slot payloads degrade to `any`, so the client face keeps strictNullChecks
+    // and full type inference but does not fail the build on that degradation.
+    "noImplicitAny": false
+  },
+  "include": ["src/client/**/*.ts", "src/client/**/*.tsx"]
+}
