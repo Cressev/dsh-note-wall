@@ -1,5 +1,5 @@
-# dsh-sticky-wall bundle layer: the note-wall host service, its gateway
+# dsh-note-wall bundle layer: the note-wall host service, its gateway
 # namespace, the model tools, and the sidebar panel.
 - insert:
     - id: sticky-wall
-      name: 'dsh-sticky-wall'
+      name: 'dsh-note-wall'

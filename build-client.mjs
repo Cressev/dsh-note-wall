@@ -19,5 +19,5 @@ await rm('lib/client.cjs', { force: true })
 await rm('lib/client.d.cts', { force: true })
 const prologue = '\tvar module = { exports: {} };\n\tvar exports = module.exports;\n'
 const epilogue = '\treturn module.exports;\n'
-await writeFile('lib/client.js', `window.__ModuleLoader__.load({\n\tid: "dsh-sticky-wall",\n\tfactory: (require) => {\n${prologue}${code}${epilogue}\t},\n})\n`)
+await writeFile('lib/client.js', `window.__ModuleLoader__.load({\n\tid: "dsh-note-wall",\n\tfactory: (require) => {\n${prologue}${code}${epilogue}\t},\n})\n`)
 console.log('client bundle written')

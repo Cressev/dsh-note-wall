@@ -1,4 +1,4 @@
-# dsh-sticky-wall
+# dsh-note-wall
 
 A persistent note wall for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness): pin work notes, memos and ideas in folders, search them, roll back a mistake, and let the agent read and write them for you.
 
@@ -12,17 +12,23 @@ A persistent note wall for [DeepSeek Harness](https://github.com/deepseek-ai/dee
 
 ## Install
 
+Install from this repository (the npm package is not published yet):
+
 ```sh
-dsh plugin --profile web add dsh-sticky-wall
+dsh plugin --profile web add github:Cressev/dsh-note-wall
 ```
 
 Restart `dsh web`, reload the page, and the **sticky wall** entry appears in the left sidebar.
 
-From a checkout instead of npm:
+> **Name note:** the npm name `dsh-sticky-wall` belongs to an unrelated third-party
+> plugin. This package is `dsh-note-wall`; installing `dsh-sticky-wall` by name gets
+> that other plugin, not this one.
+
+From a local checkout:
 
 ```sh
-git clone https://github.com/Cressev/dsh-sticky-wall.git
-dsh plugin --profile web add /absolute/path/to/dsh-sticky-wall
+git clone https://github.com/Cressev/dsh-note-wall.git
+dsh plugin --profile web add /absolute/path/to/dsh-note-wall
 ```
 
 ## Compatibility
