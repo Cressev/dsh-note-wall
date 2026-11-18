@@ -15,7 +15,7 @@ import { STICKY_COLORS, type StickyColor, type StickyNoteWire } from '../remote.
 import type { WallSource, WallSnapshot } from './wall-source.ts'
 import { clipboardImageFiles, readImageFile } from './note-markdown.tsx'
 import type { StickyWallKey } from './locales.ts'
-import { css } from './QuickCapture.styles'
+import { css } from './QuickCapture.styles.ts'
 
 /** Injected face for the overlay host. */
 export interface QuickCaptureInjected {

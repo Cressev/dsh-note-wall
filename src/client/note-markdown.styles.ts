@@ -1,31 +1,33 @@
 /** Generated from note-markdown.module.css; do not edit by hand. */
 export const css: Record<string, string | undefined> = {
-  'body': 'sw-note-markdown-body',
-  'bullet': 'sw-note-markdown-bullet',
-  'checkbox': 'sw-note-markdown-checkbox',
-  'fmtBar': 'sw-note-markdown-fmtBar',
-  'fmtBtn': 'sw-note-markdown-fmtBtn',
-  'gap': 'sw-note-markdown-gap',
-  'glyphBold': 'sw-note-markdown-glyphBold',
-  'glyphHeading': 'sw-note-markdown-glyphHeading',
-  'glyphItalic': 'sw-note-markdown-glyphItalic',
-  'glyphStrike': 'sw-note-markdown-glyphStrike',
-  'h1': 'sw-note-markdown-h1',
-  'h2': 'sw-note-markdown-h2',
-  'h3': 'sw-note-markdown-h3',
-  'imgStrip': 'sw-note-markdown-imgStrip',
-  'inlineCode': 'sw-note-markdown-inlineCode',
-  'li': 'sw-note-markdown-li',
-  'lightbox': 'sw-note-markdown-lightbox',
-  'p': 'sw-note-markdown-p',
-  'task': 'sw-note-markdown-task',
-  'taskDone': 'sw-note-markdown-taskDone',
-  'thumb': 'sw-note-markdown-thumb',
-  'thumbPending': 'sw-note-markdown-thumbPending',
+  "body": "sw-md-body",
+  "bullet": "sw-md-bullet",
+  "checkbox": "sw-md-checkbox",
+  "fmtBar": "sw-md-fmtBar",
+  "fmtBtn": "sw-md-fmtBtn",
+  "gap": "sw-md-gap",
+  "glyphBold": "sw-md-glyphBold",
+  "glyphHeading": "sw-md-glyphHeading",
+  "glyphItalic": "sw-md-glyphItalic",
+  "glyphStrike": "sw-md-glyphStrike",
+  "h1": "sw-md-h1",
+  "h2": "sw-md-h2",
+  "h3": "sw-md-h3",
+  "imgStrip": "sw-md-imgStrip",
+  "inlineCode": "sw-md-inlineCode",
+  "li": "sw-md-li",
+  "lightbox": "sw-md-lightbox",
+  "p": "sw-md-p",
+  "task": "sw-md-task",
+  "taskDone": "sw-md-taskDone",
+  "thumb": "sw-md-thumb",
+  "thumbPending": "sw-md-thumbPending",
 }
-export const cssText = `/* Note-Markdown inside candy cards. */
 
-.sw-note-markdown-body {
+export const cssText = `
+/* Note-Markdown inside candy cards. */
+
+.sw-md-body {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -34,25 +36,25 @@ export const cssText = `/* Note-Markdown inside candy cards. */
   word-break: break-word;
 }
 
-.sw-note-markdown-gap {
+.sw-md-gap {
   height: 7px;
 }
 
-.sw-note-markdown-h1 {
+.sw-md-h1 {
   margin: 2px 0 1px;
   font-size: 16.5px;
   font-weight: 800;
   line-height: 1.3;
 }
 
-.sw-note-markdown-h2 {
+.sw-md-h2 {
   margin: 2px 0 1px;
   font-size: 14.5px;
   font-weight: 800;
   line-height: 1.3;
 }
 
-.sw-note-markdown-h3 {
+.sw-md-h3 {
   margin: 1px 0;
   font-size: 13px;
   font-weight: 700;
@@ -61,19 +63,19 @@ export const cssText = `/* Note-Markdown inside candy cards. */
   text-underline-offset: 3px;
 }
 
-.sw-note-markdown-p {
+.sw-md-p {
   margin: 0;
   white-space: pre-wrap;
 }
 
-.sw-note-markdown-li {
+.sw-md-li {
   display: flex;
   align-items: center;
   gap: 7px;
   padding-left: 3px;
 }
 
-.sw-note-markdown-bullet {
+.sw-md-bullet {
   flex: none;
   min-width: 14px;
   font-weight: 700;
@@ -81,7 +83,7 @@ export const cssText = `/* Note-Markdown inside candy cards. */
   text-align: center;
 }
 
-.sw-note-markdown-task {
+.sw-md-task {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -92,11 +94,11 @@ export const cssText = `/* Note-Markdown inside candy cards. */
   transition: background 0.12s ease;
 }
 
-.sw-note-markdown-task:hover {
+.sw-md-task:hover {
   background: rgb(255 255 255 / 35%);
 }
 
-.sw-note-markdown-checkbox {
+.sw-md-checkbox {
   position: relative;
   flex: none;
   display: inline-flex;
@@ -112,13 +114,13 @@ export const cssText = `/* Note-Markdown inside candy cards. */
   opacity: 0.75;
 }
 
-.sw-note-markdown-checkbox[data-checked='true'] {
+.sw-md-checkbox[data-checked='true'] {
   background: currentColor;
   opacity: 0.92;
 }
 
 /* The check glyph inverts against the filled box for contrast. */
-.sw-note-markdown-checkbox[data-checked='true']::after {
+.sw-md-checkbox[data-checked='true']::after {
   content: '';
   position: absolute;
   left: 3.5px;
@@ -130,17 +132,17 @@ export const cssText = `/* Note-Markdown inside candy cards. */
   transform: rotate(42deg);
 }
 
-.sw-note-markdown-task .sw-note-markdown-checkbox[data-checked='true'] {
+.sw-md-task .sw-md-checkbox[data-checked='true'] {
   color: inherit;
 }
 
-.sw-note-markdown-taskDone {
+.sw-md-taskDone {
   text-decoration: line-through;
   text-decoration-thickness: 1.5px;
   opacity: 0.55;
 }
 
-.sw-note-markdown-inlineCode {
+.sw-md-inlineCode {
   padding: 0.5px 5px;
   border-radius: 6px;
   background: rgb(255 255 255 / 50%);
@@ -150,14 +152,14 @@ export const cssText = `/* Note-Markdown inside candy cards. */
 
 /* ---------- edit toolbar ---------- */
 
-.sw-note-markdown-fmtBar {
+.sw-md-fmtBar {
   display: flex;
   align-items: center;
   gap: 3px;
   padding: 2px 0;
 }
 
-.sw-note-markdown-fmtBtn {
+.sw-md-fmtBtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -173,17 +175,17 @@ export const cssText = `/* Note-Markdown inside candy cards. */
   transition: background 0.12s ease;
 }
 
-.sw-note-markdown-fmtBtn:hover {
+.sw-md-fmtBtn:hover {
   background: rgb(255 255 255 / 85%);
 }
 
 /* Letter glyphs for bold/italic/strike/heading — the typographic idiom; the
    previous raw characters (S̶, •, 1., ☑) rendered as mismatched system
    glyphs and emoji. */
-.sw-note-markdown-glyphBold,
-.sw-note-markdown-glyphItalic,
-.sw-note-markdown-glyphStrike,
-.sw-note-markdown-glyphHeading {
+.sw-md-glyphBold,
+.sw-md-glyphItalic,
+.sw-md-glyphStrike,
+.sw-md-glyphHeading {
   font-size: 13.5px;
   font-weight: 800;
   line-height: 1;
@@ -191,36 +193,36 @@ export const cssText = `/* Note-Markdown inside candy cards. */
   font-family: var(--dsw-ui-font, -apple-system, 'SF Pro Text', 'PingFang SC', sans-serif);
 }
 
-.sw-note-markdown-glyphBold {
+.sw-md-glyphBold {
   font-weight: 800;
 }
 
-.sw-note-markdown-glyphItalic {
+.sw-md-glyphItalic {
   font-style: italic;
   font-weight: 600;
   padding-right: 1px;
 }
 
-.sw-note-markdown-glyphStrike {
+.sw-md-glyphStrike {
   font-weight: 650;
   text-decoration: line-through;
   text-decoration-thickness: 1.5px;
 }
 
-.sw-note-markdown-glyphHeading {
+.sw-md-glyphHeading {
   font-weight: 750;
   font-size: 13px;
 }
 
 /* ---------- image strip ---------- */
 
-.sw-note-markdown-imgStrip {
+.sw-md-imgStrip {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.sw-note-markdown-thumb {
+.sw-md-thumb {
   width: 64px;
   height: 64px;
   padding: 0;
@@ -232,11 +234,11 @@ export const cssText = `/* Note-Markdown inside candy cards. */
   transition: transform 0.14s ease;
 }
 
-.sw-note-markdown-thumb:hover {
+.sw-md-thumb:hover {
   transform: scale(1.06);
 }
 
-.sw-note-markdown-thumbPending {
+.sw-md-thumbPending {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -249,7 +251,7 @@ export const cssText = `/* Note-Markdown inside candy cards. */
 
 /* ---------- lightbox ---------- */
 
-.sw-note-markdown-lightbox {
+.sw-md-lightbox {
   position: fixed;
   inset: 0;
   z-index: 120;
@@ -262,7 +264,7 @@ export const cssText = `/* Note-Markdown inside candy cards. */
   animation: fade-in 0.15s ease both;
 }
 
-.sw-note-markdown-lightbox img {
+.sw-md-lightbox img {
   max-width: min(92vw, 1100px);
   max-height: 86vh;
   border-radius: 14px;
@@ -273,4 +275,5 @@ export const cssText = `/* Note-Markdown inside candy cards. */
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
 `

@@ -20,6 +20,7 @@
 import { randomUUID } from 'node:crypto'
 import { Context } from '@deepseek-ai/cordis'
 import { defineTool } from '@deepseek-ai/dsh-tools'
+import type { Domain } from '@deepseek-ai/dsh-storage-domain'
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 import z from '@deepseek-ai/schemastery'
 import { z as zod } from 'zod'
@@ -27,7 +28,8 @@ import {
   STICKY_COLORS,
   type StickyColor, type StickyFolderWire, type StickyImageWire, type StickyNoteWire, type StickyWallState,
 } from './remote.ts'
-import { stickyWallDomain, type WallDomain } from './storage.ts'
+import { stickyWallDomain, stickySyncJournalDomain, type WallDomain } from './storage.ts'
+import { canonical, type SyncWall } from './sync-merge.ts'
 
 export { stickyWallRemote } from './remote.ts'
 export type {
@@ -55,6 +57,36 @@ const MAX_NOTE_IMAGES = 9
 const SNAPSHOT_QUIET_MS = 10 * 60 * 1000
 /** Tool listing/search result ceiling. */
 const TOOL_RESULT_LIMIT = 20
+
+/**
+ * Deterministic id order for sync comparison.
+ *
+ * `localeCompare` collates by language rules, and the browser and the host
+ * disagree: a folder id like 「收纳盒」 sorts before 「灵感」 under the host's
+ * en-US collation but after it under the browser's zh-CN collation. The client
+ * normalizes the wall it reads and hands that order back as the expected value,
+ * so a locale-sensitive sort made the compare-and-swap reject every write —
+ * "本机有新变化" forever. Compare UTF-16 code units instead; both sides agree.
+ * @param a - first row.
+ * @param b - second row.
+ * @returns negative, zero, or positive.
+ */
+function bySyncId(a: { readonly id: string }, b: { readonly id: string }): number {
+  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0
+}
+
+/**
+ * Id-sorted copy of a sync wall, in the one order both faces compare with.
+ * @param wall - unsorted wall.
+ * @returns a new wall with every table sorted by {@link bySyncId}.
+ */
+function sortWallBy(wall: SyncWall): SyncWall {
+  return {
+    folders: [...wall.folders].sort(bySyncId),
+    notes: [...wall.notes].sort(bySyncId),
+    images: [...wall.images].sort(bySyncId),
+  }
+}
 
 /** Clamp an optional integer tool argument into [1, max] with a default. */
 function clampInt(value: number | undefined, max: number, fallback: number): number {
@@ -101,6 +133,13 @@ export class StickyWallService extends TypertRemoteService {
 
   private readonly limits: { recent: number, daily: number }
   private readonly domain: Promise<WallDomain>
+  private readonly journal: Promise<Domain<typeof stickySyncJournalDomain>>
+  /** Serializes every wall mutation against syncApply so a sync write can
+   * never interleave with a user edit (CAS would otherwise silently fail). */
+  private syncLock: Promise<void> = Promise.resolve()
+  /** Set while a journaled sync write is in flight; blocks new mutations
+   * so a crash during the write cannot be half-applied by later edits. */
+  private syncBroken = false
   private readonly initialized: PromiseLike<unknown>
 
   /**
@@ -111,8 +150,10 @@ export class StickyWallService extends TypertRemoteService {
     super(ctx, 'stickyWall')
     this.limits = { recent: config.recentSnapshots, daily: config.dailySnapshots }
     this.domain = ctx.storageDomain.open(stickyWallDomain)
+    this.journal = ctx.storageDomain.open(stickySyncJournalDomain)
     ctx.effect(() => () => { void this.domain.then(domain => domain.close()) }, 'stickyWall: storage')
-    this.initialized = this.seed()
+    ctx.effect(() => () => { void this.journal.then(domain => domain.close()) }, 'stickyWall: sync journal')
+    this.initialized = this.seed().then(() => this.recoverSync())
     this.registerTools()
   }
 
@@ -219,11 +260,90 @@ export class StickyWallService extends TypertRemoteService {
     })), 'stickyWall: tool search')
   }
 
-  /** Retain a pre-mutation snapshot, then apply the write body. */
+  /** Retain a pre-mutation snapshot, then apply the write body under the sync lock. */
   private async mutate<T>(body: (domain: WallDomain) => Promise<T>): Promise<T> {
-    const domain = await this.domain
-    await this.snapshotBeforeChange(domain)
-    return body(domain)
+    return this.exclusive(async () => {
+      const domain = await this.domain
+      await this.snapshotBeforeChange(domain)
+      return body(domain)
+    })
+  }
+
+  /** Run a wall-touching operation while holding the sync lock. */
+  private async exclusive<T>(body: () => Promise<T>): Promise<T> {
+    const previous = this.syncLock
+    let release!: () => void
+    this.syncLock = new Promise<void>(resolve => { release = resolve })
+    await previous
+    try {
+      if (this.syncBroken) throw new Error('Sync recovery is required; restart the application（同步数据恢复中，请重启应用）')
+      return await body()
+    } finally { release() }
+  }
+
+  /** Read the wall in a stable, id-sorted order for CAS comparisons. */
+  private syncValue(domain: WallDomain): SyncWall {
+    return sortWallBy({
+      folders: [...domain.table('folders').entries()].map(([, row]) => row),
+      notes: [...domain.table('notes').entries()].map(([, row]) => row),
+      images: [...domain.table('images').entries()].map(([, row]) => row),
+    })
+  }
+
+  /** Replace the whole wall with a synced value (used by syncApply and recovery). */
+  private async writeSyncValue(domain: WallDomain, wall: SyncWall): Promise<void> {
+    for (const row of wall.images) await domain.table('images').put(row.id, row)
+    for (const row of wall.folders) await domain.table('folders').put(row.id, row)
+    for (const row of wall.notes) await domain.table('notes').put(row.id, row)
+    for (const id of [...domain.table('notes').keys()]) if (!wall.notes.some(row => row.id === id)) await domain.table('notes').delete(id)
+    for (const id of [...domain.table('folders').keys()]) if (!wall.folders.some(row => row.id === id)) await domain.table('folders').delete(id)
+    for (const id of [...domain.table('images').keys()]) if (!wall.images.some(row => row.id === id)) await domain.table('images').delete(id)
+  }
+
+  /** Replay a sync write that was interrupted by a crash on a previous boot. */
+  private async recoverSync(): Promise<void> {
+    const journal = await this.journal
+    const pending = journal.global.get().pending
+    if (pending === '') return
+    await this.writeSyncValue(await this.domain, JSON.parse(pending) as SyncWall)
+    await journal.global.set({ pending: '' })
+  }
+
+  /** Read the whole local wall (folders/notes/images) for cloud sync. */
+  @Remote('syncRead')
+  async syncRead(): Promise<SyncWall> {
+    await this.initialized
+    return this.exclusive(async () => this.syncValue(await this.domain))
+  }
+
+  /** Apply a merged wall only when the local wall still matches `expected`.
+   * Returns false so the caller can retry the merge when a local edit raced. */
+  @Remote('syncApply')
+  async syncApply(request: { expected: SyncWall, next: SyncWall }): Promise<boolean> {
+    await this.initialized
+    return this.exclusive(async () => {
+      const domain = await this.domain
+      const current = this.syncValue(domain)
+      // Sort the caller's wall the same way before comparing: the browser and
+      // the host collate differently, so trusting the incoming order would
+      // reject every write (see bySyncId).
+      if (canonical(current) !== canonical(sortWallBy(request.expected))) return false
+      const journal = await this.journal
+      await journal.global.set({ pending: JSON.stringify(current) })
+      this.syncBroken = true
+      try {
+        await this.snapshotBeforeChange(domain)
+        await this.writeSyncValue(domain, request.next)
+        await journal.global.set({ pending: '' })
+        this.syncBroken = false
+      } catch (error) {
+        await this.writeSyncValue(domain, current)
+        await journal.global.set({ pending: '' })
+        this.syncBroken = false
+        throw error
+      }
+      return true
+    })
   }
 
   /** Retain one snapshot: `recent` per quiet window, `daily` per local day. */
@@ -524,7 +644,7 @@ export class StickyWallService extends TypertRemoteService {
     const domain = await this.domain
     const id = randomUUID()
     const record: StickyImageWire = { id, dataUrl, createdAt: Date.now() }
-    await domain.table('images').put(id, record)
+    await this.exclusive(async () => { await domain.table('images').put(id, record) })
     return record
   }
 

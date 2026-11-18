@@ -1,25 +1,27 @@
 /** Generated from QuickCapture.module.css; do not edit by hand. */
 export const css: Record<string, string | undefined> = {
-  'dot': 'sw-quickcapture-dot',
-  'dotActive': 'sw-quickcapture-dotActive',
-  'dots': 'sw-quickcapture-dots',
-  'pasteStrip': 'sw-quickcapture-pasteStrip',
-  'pasteThumb': 'sw-quickcapture-pasteThumb',
-  'pill': 'sw-quickcapture-pill',
-  'quick': 'sw-quickcapture-quick',
-  'quickArea': 'sw-quickcapture-quickArea',
-  'quickClose': 'sw-quickcapture-quickClose',
-  'quickFoot': 'sw-quickcapture-quickFoot',
-  'quickHead': 'sw-quickcapture-quickHead',
-  'quickHint': 'sw-quickcapture-quickHint',
-  'quickTitle': 'sw-quickcapture-quickTitle',
-  'root': 'sw-quickcapture-root',
-  'select': 'sw-quickcapture-select',
-  'toast': 'sw-quickcapture-toast',
+  "dot": "sw-capture-dot",
+  "dotActive": "sw-capture-dotActive",
+  "dots": "sw-capture-dots",
+  "pasteStrip": "sw-capture-pasteStrip",
+  "pasteThumb": "sw-capture-pasteThumb",
+  "pill": "sw-capture-pill",
+  "quick": "sw-capture-quick",
+  "quickArea": "sw-capture-quickArea",
+  "quickClose": "sw-capture-quickClose",
+  "quickFoot": "sw-capture-quickFoot",
+  "quickHead": "sw-capture-quickHead",
+  "quickHint": "sw-capture-quickHint",
+  "quickTitle": "sw-capture-quickTitle",
+  "root": "sw-capture-root",
+  "select": "sw-capture-select",
+  "toast": "sw-capture-toast",
 }
-export const cssText = `/* Frame-wide capture surfaces: quick bar, selection pill, toast. */
 
-.sw-quickcapture-root {
+export const cssText = `
+/* Frame-wide capture surfaces: quick bar, selection pill, toast. */
+
+.sw-capture-root {
   position: fixed;
   inset: 0;
   z-index: 90;
@@ -28,7 +30,7 @@ export const cssText = `/* Frame-wide capture surfaces: quick bar, selection pil
 
 /* ---------- quick bar ---------- */
 
-.sw-quickcapture-quick {
+.sw-capture-quick {
   position: absolute;
   top: 18px;
   left: 50%;
@@ -46,25 +48,25 @@ export const cssText = `/* Frame-wide capture surfaces: quick bar, selection pil
   animation: quick-drop 0.26s cubic-bezier(0.2, 1.3, 0.5, 1) both;
 }
 
-.sw-quickcapture-quick[data-color='yellow'] { --qc-color: #ffd94d; }
-.sw-quickcapture-quick[data-color='pink'] { --qc-color: #ff9ec4; }
-.sw-quickcapture-quick[data-color='mint'] { --qc-color: #7fe6b0; }
-.sw-quickcapture-quick[data-color='blue'] { --qc-color: #7dc8ff; }
-.sw-quickcapture-quick[data-color='purple'] { --qc-color: #c9a7ff; }
-.sw-quickcapture-quick[data-color='orange'] { --qc-color: #ffb366; }
+.sw-capture-quick[data-color='yellow'] { --qc-color: #ffd94d; }
+.sw-capture-quick[data-color='pink'] { --qc-color: #ff9ec4; }
+.sw-capture-quick[data-color='mint'] { --qc-color: #7fe6b0; }
+.sw-capture-quick[data-color='blue'] { --qc-color: #7dc8ff; }
+.sw-capture-quick[data-color='purple'] { --qc-color: #c9a7ff; }
+.sw-capture-quick[data-color='orange'] { --qc-color: #ffb366; }
 
-.sw-quickcapture-quickHead {
+.sw-capture-quickHead {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.sw-quickcapture-quickTitle {
+.sw-capture-quickTitle {
   font-size: 12.5px;
   font-weight: 700;
 }
 
-.sw-quickcapture-quickClose {
+.sw-capture-quickClose {
   width: 22px;
   height: 22px;
   border: none;
@@ -75,12 +77,12 @@ export const cssText = `/* Frame-wide capture surfaces: quick bar, selection pil
   opacity: 0.5;
 }
 
-.sw-quickcapture-quickClose:hover {
+.sw-capture-quickClose:hover {
   opacity: 1;
   background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
-.sw-quickcapture-quickArea {
+.sw-capture-quickArea {
   border: 1.5px dashed color-mix(in srgb, currentColor 25%, transparent);
   border-radius: 12px;
   padding: 8px 10px;
@@ -93,24 +95,24 @@ export const cssText = `/* Frame-wide capture surfaces: quick bar, selection pil
   outline: none;
 }
 
-.sw-quickcapture-quickArea:focus {
+.sw-capture-quickArea:focus {
   border-color: color-mix(in srgb, var(--qc-color, #ffd94d) 80%, transparent);
   border-style: solid;
 }
 
-.sw-quickcapture-quickFoot {
+.sw-capture-quickFoot {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
 
-.sw-quickcapture-dots {
+.sw-capture-dots {
   display: flex;
   gap: 5px;
 }
 
-.sw-quickcapture-dot {
+.sw-capture-dot {
   width: 17px;
   height: 17px;
   border: none;
@@ -119,24 +121,24 @@ export const cssText = `/* Frame-wide capture surfaces: quick bar, selection pil
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.sw-quickcapture-dot:hover {
+.sw-capture-dot:hover {
   transform: scale(1.25);
 }
 
-.sw-quickcapture-dotActive {
+.sw-capture-dotActive {
   box-shadow:
     0 0 0 2px var(--dsw-alias-bg-elevated, #fff),
     0 0 0 4px color-mix(in srgb, currentColor 70%, transparent);
 }
 
-.sw-quickcapture-dot[data-color='yellow'] { background: #ffdb4d; color: #e6a800; }
-.sw-quickcapture-dot[data-color='pink'] { background: #ff8fbe; color: #ef4f86; }
-.sw-quickcapture-dot[data-color='mint'] { background: #4ee39a; color: #17a06a; }
-.sw-quickcapture-dot[data-color='blue'] { background: #66bfff; color: #2f8fdc; }
-.sw-quickcapture-dot[data-color='purple'] { background: #b48cff; color: #8349e6; }
-.sw-quickcapture-dot[data-color='orange'] { background: #ffab52; color: #dd7a15; }
+.sw-capture-dot[data-color='yellow'] { background: #ffdb4d; color: #e6a800; }
+.sw-capture-dot[data-color='pink'] { background: #ff8fbe; color: #ef4f86; }
+.sw-capture-dot[data-color='mint'] { background: #4ee39a; color: #17a06a; }
+.sw-capture-dot[data-color='blue'] { background: #66bfff; color: #2f8fdc; }
+.sw-capture-dot[data-color='purple'] { background: #b48cff; color: #8349e6; }
+.sw-capture-dot[data-color='orange'] { background: #ffab52; color: #dd7a15; }
 
-.sw-quickcapture-select {
+.sw-capture-select {
   height: 28px;
   max-width: 150px;
   padding: 0 8px;
@@ -148,7 +150,7 @@ export const cssText = `/* Frame-wide capture surfaces: quick bar, selection pil
   cursor: pointer;
 }
 
-.sw-quickcapture-quickHint {
+.sw-capture-quickHint {
   font-size: 10.5px;
   opacity: 0.45;
   text-align: center;
@@ -156,13 +158,13 @@ export const cssText = `/* Frame-wide capture surfaces: quick bar, selection pil
 
 /* ---------- pasted image strip ---------- */
 
-.sw-quickcapture-pasteStrip {
+.sw-capture-pasteStrip {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.sw-quickcapture-pasteThumb {
+.sw-capture-pasteThumb {
   width: 54px;
   height: 54px;
   border-radius: 9px;
@@ -172,7 +174,7 @@ export const cssText = `/* Frame-wide capture surfaces: quick bar, selection pil
 
 /* ---------- selection pill ---------- */
 
-.sw-quickcapture-pill {
+.sw-capture-pill {
   position: absolute;
   transform: translate(-50%, 0);
   height: 30px;
@@ -189,14 +191,14 @@ export const cssText = `/* Frame-wide capture surfaces: quick bar, selection pil
   animation: pill-pop 0.18s ease both;
 }
 
-.sw-quickcapture-pill:hover {
+.sw-capture-pill:hover {
   background: #ff8ab8;
   transform: translate(-50%, 0) scale(1.05);
 }
 
 /* ---------- toast ---------- */
 
-.sw-quickcapture-toast {
+.sw-capture-toast {
   position: absolute;
   bottom: 30px;
   left: 50%;
@@ -234,4 +236,5 @@ export const cssText = `/* Frame-wide capture surfaces: quick bar, selection pil
     transform: translate(-50%, 0) scale(1);
   }
 }
+
 `

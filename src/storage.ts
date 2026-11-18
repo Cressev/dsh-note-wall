@@ -76,3 +76,13 @@ export const stickyWallDomain = defineDomain({
 
 /** Opened-domain convenience alias. */
 export type WallDomain = Domain<typeof stickyWallDomain>
+
+/** Crash-recovery journal kept separately from the existing wall schema:
+ * syncApply records the pre-write wall here so a crash mid-apply can be
+ * replayed on the next boot instead of leaving a half-written wall. */
+export const stickySyncJournalDomain = defineDomain({
+  name: 'sticky_wall_sync_journal',
+  version: 1,
+  global: { schema: zod.object({ pending: zod.string() }), initial: { pending: '' } },
+  tables: {},
+})

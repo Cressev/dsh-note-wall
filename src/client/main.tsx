@@ -25,10 +25,24 @@ import { en, NS, zh, type StickyWallKey } from './locales.ts'
 import { QuickCapture, makeJump, setStickySessionId } from './QuickCapture.tsx'
 import { StickyPanelIcon } from './StickyPanelIcon.tsx'
 import { StickyWallPage } from './StickyWallPage.tsx'
+import { SyncController, type SyncApi } from './sync-controller.ts'
 import { WallSource, type StickyWallApi } from './wall-source.ts'
-import { cssText as pageCss } from './StickyWallPage.styles'
-import { cssText as captureCss } from './QuickCapture.styles'
-import { cssText as markdownCss } from './note-markdown.styles'
+import { cssText as pageCss } from './StickyWallPage.styles.ts'
+import { cssText as captureCss } from './QuickCapture.styles.ts'
+import { cssText as markdownCss } from './note-markdown.styles.ts'
+
+/**
+ * Append the wall stylesheets once per page. The bundle ships styles inline
+ * instead of importing CSS modules, so this is the only place they reach the DOM.
+ */
+function injectStyles(): void {
+  const marker = 'dsh-sticky-wall-styles'
+  if (document.getElementById(marker) !== null) return
+  const style = document.createElement('style')
+  style.id = marker
+  style.textContent = [pageCss, captureCss, markdownCss].join('\n')
+  document.head.appendChild(style)
+}
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
@@ -47,16 +61,6 @@ export const inject = ['slots', 'locale', 'remote', 'uiWorkspace']
  * Client plugin body: dictionaries, the remote mount, and the registrations.
  * @param ctx - client root context.
  */
-/** Append the wall stylesheets once per page (the bundle ships styles inline). */
-function injectStyles(): void {
-  const marker = 'dsh-sticky-wall-styles'
-  if (document.getElementById(marker) !== null) return
-  const style = document.createElement('style')
-  style.id = marker
-  style.textContent = [pageCss, captureCss, markdownCss].join('\n')
-  document.head.appendChild(style)
-}
-
 export function apply(ctx: ClientContext): void {
   injectStyles()
   const t = ctx.locale.bind(NS)
@@ -67,12 +71,14 @@ export function apply(ctx: ClientContext): void {
       const source = new WallSource(scope.remote.stickyWall as unknown as StickyWallApi)
       const uiWorkspace = scope.uiWorkspace as UiWorkspace
       const jumpToOrigin = makeJump(sessionId => { uiWorkspace.openSession(sessionId as SessionId) })
+      const sync = new SyncController(scope.remote.stickyWall as unknown as SyncApi, () => { source.reload() })
+      scope.effect(() => { sync.start(); return () => { sync.stop() } }, 'stickyWall: cloud sync')
 
       ctx.effect(() => ctx.slots.inject('main', () => ctx.slots.register({
         name: 'main',
         key: PANEL_ID,
         locale: NS,
-        inject: () => ({ source, jumpToOrigin, hooks: { wall: source } }),
+        inject: () => ({ source, sync, jumpToOrigin, hooks: { wall: source } }),
       }, StickyWallPage)), 'stickyWall: main panel')
 
       ctx.effect(() => ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({

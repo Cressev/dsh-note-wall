@@ -1,7 +1,7 @@
 {
   "name": "dsh-note-wall",
-  "version": "0.1.2",
-  "description": "Persistent note wall for DeepSeek Harness: folders, pin and strike, trash, rollback snapshots, quick capture, and model tools that pin and search notes on request.",
+  "version": "0.2.0",
+  "description": "Persistent note wall for DeepSeek Harness: folders, cards/list views, markdown notes with clickable todos, pasted images, trash, rollback snapshots, cloud sync over Supabase, and model tools that pin and search notes.",
   "type": "module",
   "license": "MIT",
   "engines": {
