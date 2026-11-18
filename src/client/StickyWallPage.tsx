@@ -290,25 +290,29 @@ export function StickyWallPage(props: StickyWallPageProps): ReactNode {
           <Tip label={t('viewCards')} side="bottom">
             <button
               className={clsx(css.viewBtn, viewMode === 'cards' && css.viewBtnActive)}
+              aria-label={t('viewCards')}
+              aria-pressed={viewMode === 'cards'}
               onClick={() => { setViewMode('cards') }}
-            >🃏</button>
+            ><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1" /><rect x="9" y="2" width="5" height="5" rx="1" /><rect x="2" y="9" width="5" height="5" rx="1" /><rect x="9" y="9" width="5" height="5" rx="1" /></svg></button>
           </Tip>
           <Tip label={t('viewList')} side="bottom">
             <button
               className={clsx(css.viewBtn, viewMode === 'list' && css.viewBtnActive)}
+              aria-label={t('viewList')}
+              aria-pressed={viewMode === 'list'}
               onClick={() => { setViewMode('list') }}
-            >📋</button>
+            ><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true"><path d="M5 4h9M5 8h9M5 12h9" /><path d="M2 4h.1M2 8h.1M2 12h.1" strokeWidth="2" /></svg></button>
           </Tip>
         </div>
         <div className={css.toolbarButtons}>
           <Tip label={t('exportMd')} side="bottom">
-            <button className={css.toolBtn} onClick={() => { void download('markdown') }}>⬇ MD</button>
+            <button className={css.toolBtn} aria-label={t('exportMd')} onClick={() => { void download('markdown') }}>↓ MD</button>
           </Tip>
           <Tip label={t('exportJson')} side="bottom">
-            <button className={css.toolBtn} onClick={() => { void download('json') }}>⬇ JSON</button>
+            <button className={css.toolBtn} aria-label={t('exportJson')} onClick={() => { void download('json') }}>↓ JSON</button>
           </Tip>
           <Tip label={t('snapshots')} side="bottom">
-            <button className={css.toolBtn} onClick={() => { setSnapshotsOpen(true) }}>🕐</button>
+            <button className={css.toolBtn} aria-label={t('snapshots')} onClick={() => { setSnapshotsOpen(true) }}>◷</button>
           </Tip>
         </div>
       </div>

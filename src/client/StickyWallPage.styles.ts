@@ -1,4 +1,4 @@
-/** Generated from StickyWallPage.module.css; do not edit by hand. */
+/** Scoped sticky-wall styles, injected by the client plugin. */
 export const css: Record<string, string | undefined> = {
   'act': 'sw-stickywallpage-act',
   'actOn': 'sw-stickywallpage-actOn',
@@ -126,12 +126,14 @@ export const cssText = `/* Sticky wall: candy-colored, rounded, playful but orga
 .sw-stickywallpage-toolbar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
 .sw-stickywallpage-searchWrap {
   position: relative;
   flex: 1;
+  min-width: 160px;
   display: flex;
   align-items: center;
 }
@@ -150,6 +152,12 @@ export const cssText = `/* Sticky wall: candy-colored, rounded, playful but orga
   padding-left: 32px;
   padding-right: 28px;
   border-radius: 999px;
+  color: inherit;
+}
+
+.sw-stickywallpage-search::placeholder {
+  color: currentColor;
+  opacity: 0.65;
 }
 
 .sw-stickywallpage-searchClear {
@@ -188,14 +196,18 @@ export const cssText = `/* Sticky wall: candy-colored, rounded, playful but orga
 }
 
 .sw-stickywallpage-viewBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 28px;
   height: 24px;
   border: none;
   border-radius: 999px;
   background: transparent;
+  color: inherit;
   font-size: 13px;
   cursor: pointer;
-  opacity: 0.5;
+  opacity: 0.75;
   transition: all 0.15s ease;
 }
 
@@ -204,7 +216,8 @@ export const cssText = `/* Sticky wall: candy-colored, rounded, playful but orga
 }
 
 .sw-stickywallpage-viewBtnActive {
-  background: var(--dsw-alias-bg-elevated, #fff);
+  background: #f2f2f2;
+  color: #26282c;
   opacity: 1;
   box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
 }
@@ -212,17 +225,18 @@ export const cssText = `/* Sticky wall: candy-colored, rounded, playful but orga
 .sw-stickywallpage-toolBtn {
   height: 30px;
   padding: 0 10px;
-  border: 1px solid color-mix(in srgb, var(--dsw-alias-text-secondary, #888) 30%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 32%, transparent);
   border-radius: 999px;
-  background: transparent;
-  color: var(--dsw-alias-text-secondary, #888);
-  font-size: 12px;
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  color: inherit;
+  font-size: 13px;
+  opacity: 0.86;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .sw-stickywallpage-toolBtn:hover {
-  color: var(--dsw-alias-text-primary, inherit);
+  opacity: 1;
   border-color: color-mix(in srgb, currentColor 55%, transparent);
   transform: translateY(-1px);
 }
@@ -236,8 +250,15 @@ export const cssText = `/* Sticky wall: candy-colored, rounded, playful but orga
   border-radius: 10px;
   background: color-mix(in srgb, currentColor 7%, transparent);
   color: inherit;
+  color-scheme: light;
   font-size: 12px;
   cursor: pointer;
+}
+
+/* Native select popups can stay light even when the app uses a dark theme. */
+.sw-stickywallpage-folderSelect option {
+  color: #202329;
+  background: #fff;
 }
 
 /* ---------- palette dots ---------- */
@@ -311,8 +332,8 @@ export const cssText = `/* Sticky wall: candy-colored, rounded, playful but orga
 }
 
 .sw-stickywallpage-pillActive {
-  background: var(--pill-color, color-mix(in srgb, currentColor 16%, transparent));
-  border-color: color-mix(in srgb, var(--pill-color, currentColor) 65%, transparent);
+  background: var(--pill-color, #e8e9eb);
+  border-color: color-mix(in srgb, var(--pill-color, #e8e9eb) 80%, transparent);
   font-weight: 600;
 }
 
@@ -716,9 +737,19 @@ export const cssText = `/* Sticky wall: candy-colored, rounded, playful but orga
 }
 
 .sw-stickywallpage-editTabActive {
-  background: var(--dsw-alias-bg-elevated, #fff);
+  background: #f2f2f2;
+  color: #26282c;
   opacity: 1;
   box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
+}
+
+.sw-stickywallpage-viewBtn:focus-visible,
+.sw-stickywallpage-toolBtn:focus-visible,
+.sw-stickywallpage-pill:focus-visible,
+.sw-stickywallpage-editTab:focus-visible,
+.sw-stickywallpage-folderSelect:focus-visible {
+  outline: 2px solid #668fff;
+  outline-offset: 2px;
 }
 
 .sw-stickywallpage-editModalArea {
