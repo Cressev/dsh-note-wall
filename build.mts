@@ -3,7 +3,7 @@ import { build } from 'tsdown'
 import { CssPlugin } from '@tsdown/css'
 import { transform } from 'esbuild'
 import { mkdir, writeFile, readdir, readFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { dirname, join, relative } from 'node:path'
 
 /** Pre-transform TS sources to decorator-free JS in a temp dir esbuild handles. */
 async function preTransform(): Promise<string> {
@@ -14,8 +14,8 @@ async function preTransform(): Promise<string> {
       const from = join(dir, entry.name)
       if (entry.isDirectory()) { await walk(from); continue }
       if (/\.css$/.test(entry.name)) {
-        const rel = from.replace(/^src\//, '')
-        await mkdir(join(out, rel, '..'), { recursive: true }).catch(() => {})
+        const rel = relative('src', from)
+        await mkdir(join(out, dirname(rel)), { recursive: true })
         await writeFile(join(out, rel), await readFile(from))
         continue
       }
@@ -29,8 +29,8 @@ async function preTransform(): Promise<string> {
         tsconfigRaw: { compilerOptions: { experimentalDecorators: false } },
         jsx: 'automatic',
       })
-      const rel = from.replace(/^src\//, '')
-      await mkdir(join(out, rel, '..'), { recursive: true }).catch(() => {})
+      const rel = relative('src', from)
+      await mkdir(join(out, dirname(rel)), { recursive: true })
       // Rewrite relative specifiers to the emitted .mjs names.
       const rewritten = code.code
         .replace(/from (["'])(\.\.?\/[^"']*?)\.tsx?\1/g, 'from $1$2.mjs$1')
@@ -64,7 +64,7 @@ if (only !== 'client') {
 
 // Client face runs in a plain-node child: the tsx loader interferes with the
 // CSS plugin's module hooks. Inputs are already plain .mjs from preTransform.
-if (only !== 'client') {
+if (only !== 'host') {
   const { spawnSync } = await import('node:child_process')
   const r = spawnSync('node', ['build-client.mjs'], { stdio: 'inherit' })
   if (r.status !== 0) throw new Error('client build failed')

@@ -6,6 +6,7 @@
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol'
 import { createTypertRemoteInfo } from '@deepseek-ai/dsh-typert-protocol/remote-info'
 import { z } from 'zod'
+import type { SyncWall } from './sync-merge.ts'
 
 /** Sticky-note palette keys; the client maps them to candy colors. */
 export const STICKY_COLORS = ['yellow', 'pink', 'mint', 'blue', 'purple', 'orange'] as const
@@ -88,6 +89,8 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     /** Sticky-wall management namespace mounted by this plugin. */
     stickyWall: {
       state(): Promise<RemoteResult<StickyWallState>>
+      syncRead(): Promise<RemoteResult<SyncWall>>
+      syncApply(request: { expected: SyncWall, next: SyncWall }): Promise<RemoteResult<boolean>>
       createNote(request: {
         text: string
         folderId?: string
@@ -150,6 +153,7 @@ const snapshotSchema = z.object({
   notes: z.number(),
 })
 const stateSchema = z.object({ folders: z.array(folderSchema), notes: z.array(noteSchema), snapshots: z.array(snapshotSchema) })
+const syncWallSchema = z.object({ folders: z.array(folderSchema), notes: z.array(noteSchema), images: z.array(imageSchema) })
 
 const notePatchSchema = z.object({
   text: z.string().optional(),
@@ -228,11 +232,29 @@ const snapshotJson = {
 } as const
 
 const voidJson = { type: 'null' } as const
+const syncWallJson = {
+  type: 'object',
+  properties: { folders: { type: 'array', items: folderJson }, notes: { type: 'array', items: noteJson }, images: { type: 'array', items: imageJson } },
+  required: ['folders', 'notes', 'images'], additionalProperties: false,
+} as const
 
 /** Hand-written remote contribution mirroring the generated clients' shape. */
 export const stickyWallRemote = createTypertRemoteInfo({
   package: 'sticky-wall-plugin',
   methods: {
+    'stickyWall/syncRead': {
+      service: 'stickyWall', description: 'Read the local wall for synchronization.', invocation: { kind: 'direct' }, parameters: [],
+      result: { mode: 'strict', typeSymbol: 'sticky-wall-plugin/remote#SyncWall', create: () => syncWallSchema, description: 'Complete local wall.', jsonSchema: syncWallJson },
+    },
+    'stickyWall/syncApply': {
+      service: 'stickyWall', description: 'Apply a synchronized wall if the local wall is unchanged.', invocation: { kind: 'direct' },
+      parameters: [{
+        name: 'request', description: 'Expected local wall and its replacement.', source: 'json',
+        codec: { mode: 'strict', typeSymbol: 'sticky-wall-plugin/remote#SyncApplyRequest', create: () => z.object({ expected: syncWallSchema, next: syncWallSchema }), jsonSchema: { type: 'object', properties: { expected: syncWallJson, next: syncWallJson }, required: ['expected', 'next'], additionalProperties: false } },
+        strictCodec: { mode: 'strict', typeSymbol: 'sticky-wall-plugin/remote#SyncApplyRequest', create: () => z.object({ expected: syncWallSchema, next: syncWallSchema }), jsonSchema: { type: 'object', properties: { expected: syncWallJson, next: syncWallJson }, required: ['expected', 'next'], additionalProperties: false } },
+      }],
+      result: { mode: 'strict', typeSymbol: 'sticky-wall-plugin/remote#SyncApplied', create: () => z.boolean(), description: 'Whether the local wall was updated.', jsonSchema: { type: 'boolean' } },
+    },
     'stickyWall/state': {
       service: 'stickyWall',
       description: 'Load the whole sticky wall: folders, notes (including trashed), and retained snapshots.',

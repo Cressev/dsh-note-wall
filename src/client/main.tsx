@@ -26,6 +26,7 @@ import { QuickCapture, makeJump, setStickySessionId } from './QuickCapture.tsx'
 import { StickyPanelIcon } from './StickyPanelIcon.tsx'
 import { StickyWallPage } from './StickyWallPage.tsx'
 import { WallSource, type StickyWallApi } from './wall-source.ts'
+import { SyncController, type SyncApi } from './sync-controller.ts'
 import { cssText as pageCss } from './StickyWallPage.styles'
 import { cssText as captureCss } from './QuickCapture.styles'
 import { cssText as markdownCss } from './note-markdown.styles'
@@ -65,6 +66,8 @@ export function apply(ctx: ClientContext): void {
     await owner.remote.$mount(stickyWallRemote)
     owner.inject(['remote.stickyWall'], (scope) => {
       const source = new WallSource(scope.remote.stickyWall as unknown as StickyWallApi)
+      const sync = new SyncController(scope.remote.stickyWall as unknown as SyncApi, () => source.reload())
+      scope.effect(() => { sync.start(); return () => { sync.stop() } }, 'stickyWall: cloud sync')
       const uiWorkspace = scope.uiWorkspace as UiWorkspace
       const jumpToOrigin = makeJump(sessionId => { uiWorkspace.openSession(sessionId as SessionId) })
 
@@ -72,7 +75,7 @@ export function apply(ctx: ClientContext): void {
         name: 'main',
         key: PANEL_ID,
         locale: NS,
-        inject: () => ({ source, jumpToOrigin, hooks: { wall: source } }),
+        inject: () => ({ source, sync, jumpToOrigin, hooks: { wall: source } }),
       }, StickyWallPage)), 'stickyWall: main panel')
 
       ctx.effect(() => ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({

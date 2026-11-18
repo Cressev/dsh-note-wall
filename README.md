@@ -12,10 +12,10 @@ A persistent note wall for [DeepSeek Harness](https://github.com/deepseek-ai/dee
 
 ## Install
 
-Install from this repository (the npm package is not published yet):
+Install this synchronization branch (the npm package is not published yet):
 
 ```sh
-dsh plugin --profile web add github:Cressev/dsh-note-wall
+dsh plugin --profile web add 'github:Cressev/dsh-note-wall#feature/supabase-sync'
 ```
 
 Restart `dsh web`, reload the page, and the **sticky wall** entry appears in the left sidebar.
@@ -34,8 +34,18 @@ dsh plugin --profile web add /absolute/path/to/dsh-note-wall
 ## Compatibility
 
 - Requires DeepSeek Harness `0.2.1-rc.5` or newer (`0.2.x`); `engines.dsh` declares the range.
-- Web profile only (the wall is a browser panel).
-- Notes live in the profile's local storage domain `sticky_wall`; nothing leaves the machine.
+- Web and desktop profiles using the browser panel.
+- Notes live in the local storage domain `sticky_wall`. When cloud sync is enabled and signed in, notes, folders and images also sync to the configured Supabase project.
+
+## Cloud sync
+
+Sign in from the cloud-sync button on the note wall and use the same sync account on each device. The client checks for changes approximately every five seconds while the app is running, and retries after disconnection. Existing notes from each device are merged. Concurrent note edits are retained as conflict copies; conflicting folder operations stop synchronization instead of overwriting data.
+
+This branch is configured for the owner's Supabase project. `src/client/sync-controller.ts` contains its project URL and **publishable** key; neither a Supabase secret key nor a service-role key belongs in client code. A publishable key identifies the project and is visible to anyone using this public repository. Users wishing to host their own instance must configure their own project URL and publishable key, apply `supabase-sync.sql` to their own project, and rebuild the client. The SQL enables row-level security and an authenticated compare-and-swap function; it must be applied separately from installing the plugin.
+
+Notes and images are stored in Supabase without application-level end-to-end encryption. Session tokens are stored in the desktop webview's local storage. Local baseline copies for conflict detection are kept in IndexedDB. Back up existing note data before installing the plugin on another device. Upload of a test note from one desktop has been verified; two physical devices have not yet been tested together.
+
+`sync-merge.test.ts`, `sync-controller.test.ts`, and `sync-journal.test.mjs` cover merging, simulated two-device/offline synchronization, and local recovery; they do not replace a real two-device test.
 
 ## Storage
 
@@ -47,6 +57,7 @@ One storage domain holds three tables: folders, notes (with `deletedAt` tombston
 pnpm install
 pnpm build        # lib/index.mjs, lib/remote.mjs, lib/client.js
 pnpm typecheck
+node --import tsx/esm --test sync-merge.test.ts sync-controller.test.ts sync-journal.test.mjs
 ```
 
 ## Licence

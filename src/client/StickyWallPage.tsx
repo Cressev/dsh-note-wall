@@ -19,6 +19,8 @@ import {
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import { STICKY_COLORS, type StickyColor, type StickyFolderWire, type StickyNoteWire } from '../remote.ts'
 import type { WallSource, WallSnapshot } from './wall-source.ts'
+import type { SyncController } from './sync-controller.ts'
+import { SyncControl } from './SyncControl.tsx'
 import {
   NoteMarkdown, applyNoteFormat, clipboardImageFiles, readImageFile, toggleTask,
 } from './note-markdown.tsx'
@@ -57,6 +59,7 @@ const FORMAT_BUTTONS: readonly { format: NoteFormat, label: string, title: strin
 export interface StickyWallInjected {
   /** Direct action face of the shared wall source. */
   readonly source: WallSource
+  readonly sync: SyncController
   /** Open the origin conversation and scroll to the captured text. */
   readonly jumpToOrigin: (note: StickyNoteWire) => void
   readonly hooks: { readonly wall: WallSource }
@@ -143,7 +146,7 @@ function summaryOf(note: StickyNoteWire): string {
 
 /** The wall page. */
 export function StickyWallPage(props: StickyWallPageProps): ReactNode {
-  const { t, useWall, source, jumpToOrigin } = props
+  const { t, useWall, source, sync, jumpToOrigin } = props
   const wall = useWall((snapshot: WallSnapshot) => snapshot)
   const [filter, setFilter] = useState<FolderFilter>('all')
   const [viewMode, setViewMode] = useState<WallViewMode>(loadViewMode)
@@ -265,6 +268,7 @@ export function StickyWallPage(props: StickyWallPageProps): ReactNode {
       )}
 
       <div className={css.toolbar}>
+        <SyncControl sync={sync} />
         <Button variant="primary" size="sm" icon={<IconPlusOutlineRegular size={14} />} onClick={() => { setComposeOpen(true) }}>
           {t('newNote')}
         </Button>

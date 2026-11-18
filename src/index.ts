@@ -20,6 +20,7 @@
 import { randomUUID } from 'node:crypto'
 import { Context } from '@deepseek-ai/cordis'
 import { defineTool } from '@deepseek-ai/dsh-tools'
+import type { Domain } from '@deepseek-ai/dsh-storage-domain'
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 import z from '@deepseek-ai/schemastery'
 import { z as zod } from 'zod'
@@ -27,7 +28,8 @@ import {
   STICKY_COLORS,
   type StickyColor, type StickyFolderWire, type StickyImageWire, type StickyNoteWire, type StickyWallState,
 } from './remote.ts'
-import { stickyWallDomain, type WallDomain } from './storage.ts'
+import { stickyWallDomain, stickySyncJournalDomain, type WallDomain } from './storage.ts'
+import { canonical, type SyncWall } from './sync-merge.ts'
 
 export { stickyWallRemote } from './remote.ts'
 export type {
@@ -102,6 +104,9 @@ export class StickyWallService extends TypertRemoteService {
   private readonly limits: { recent: number, daily: number }
   private readonly domain: Promise<WallDomain>
   private readonly initialized: PromiseLike<unknown>
+  private readonly journal: Promise<Domain<typeof stickySyncJournalDomain>>
+  private syncLock: Promise<void> = Promise.resolve()
+  private syncBroken = false
 
   /**
    * @param ctx - Host context carrying storage-domain and tool services.
@@ -111,8 +116,10 @@ export class StickyWallService extends TypertRemoteService {
     super(ctx, 'stickyWall')
     this.limits = { recent: config.recentSnapshots, daily: config.dailySnapshots }
     this.domain = ctx.storageDomain.open(stickyWallDomain)
+    this.journal = ctx.storageDomain.open(stickySyncJournalDomain)
     ctx.effect(() => () => { void this.domain.then(domain => domain.close()) }, 'stickyWall: storage')
-    this.initialized = this.seed()
+    ctx.effect(() => () => { void this.journal.then(domain => domain.close()) }, 'stickyWall: sync journal')
+    this.initialized = this.seed().then(() => this.recoverSync())
     this.registerTools()
   }
 
@@ -221,9 +228,79 @@ export class StickyWallService extends TypertRemoteService {
 
   /** Retain a pre-mutation snapshot, then apply the write body. */
   private async mutate<T>(body: (domain: WallDomain) => Promise<T>): Promise<T> {
-    const domain = await this.domain
-    await this.snapshotBeforeChange(domain)
-    return body(domain)
+    return this.exclusive(async () => {
+      const domain = await this.domain
+      await this.snapshotBeforeChange(domain)
+      return body(domain)
+    })
+  }
+
+  private async exclusive<T>(body: () => Promise<T>): Promise<T> {
+    const previous = this.syncLock
+    let release!: () => void
+    this.syncLock = new Promise<void>(resolve => { release = resolve })
+    await previous
+    try {
+      if (this.syncBroken) throw new Error('Sync recovery is required; restart the application')
+      return await body()
+    } finally { release() }
+  }
+
+  private syncValue(domain: WallDomain): SyncWall {
+    const sorted = <T extends { id: string }>(items: T[]): T[] => items.sort((a, b) => a.id.localeCompare(b.id))
+    return {
+      folders: sorted([...domain.table('folders').entries()].map(([, row]) => row)),
+      notes: sorted([...domain.table('notes').entries()].map(([, row]) => row)),
+      images: sorted([...domain.table('images').entries()].map(([, row]) => row)),
+    }
+  }
+
+  private async writeSyncValue(domain: WallDomain, wall: SyncWall): Promise<void> {
+    for (const row of wall.images) await domain.table('images').put(row.id, row)
+    for (const row of wall.folders) await domain.table('folders').put(row.id, row)
+    for (const row of wall.notes) await domain.table('notes').put(row.id, row)
+    for (const id of [...domain.table('notes').keys()]) if (!wall.notes.some(row => row.id === id)) await domain.table('notes').delete(id)
+    for (const id of [...domain.table('folders').keys()]) if (!wall.folders.some(row => row.id === id)) await domain.table('folders').delete(id)
+    for (const id of [...domain.table('images').keys()]) if (!wall.images.some(row => row.id === id)) await domain.table('images').delete(id)
+  }
+
+  private async recoverSync(): Promise<void> {
+    const journal = await this.journal
+    const pending = journal.global.get().pending
+    if (pending === '') return
+    await this.writeSyncValue(await this.domain, JSON.parse(pending) as SyncWall)
+    await journal.global.set({ pending: '' })
+  }
+
+  @Remote('syncRead')
+  async syncRead(): Promise<SyncWall> {
+    await this.initialized
+    return this.exclusive(async () => this.syncValue(await this.domain))
+  }
+
+  @Remote('syncApply')
+  async syncApply(request: { expected: SyncWall, next: SyncWall }): Promise<boolean> {
+    await this.initialized
+    return this.exclusive(async () => {
+      const domain = await this.domain
+      const current = this.syncValue(domain)
+      if (canonical(current) !== canonical(request.expected)) return false
+      const journal = await this.journal
+      await journal.global.set({ pending: JSON.stringify(current) })
+      this.syncBroken = true
+      try {
+        await this.snapshotBeforeChange(domain)
+        await this.writeSyncValue(domain, request.next)
+        await journal.global.set({ pending: '' })
+        this.syncBroken = false
+      } catch (error) {
+        await this.writeSyncValue(domain, current)
+        await journal.global.set({ pending: '' })
+        this.syncBroken = false
+        throw error
+      }
+      return true
+    })
   }
 
   /** Retain one snapshot: `recent` per quiet window, `daily` per local day. */
@@ -524,7 +601,7 @@ export class StickyWallService extends TypertRemoteService {
     const domain = await this.domain
     const id = randomUUID()
     const record: StickyImageWire = { id, dataUrl, createdAt: Date.now() }
-    await domain.table('images').put(id, record)
+    await this.exclusive(async () => { await domain.table('images').put(id, record) })
     return record
   }
 
