@@ -9,9 +9,13 @@ await build({
   format: 'cjs',
   // Everything outside this package is supplied by the shell's module table,
   // so node_modules never enters the bundle (their CSS would break the build).
-  // Every npm package is supplied by the shell's module table; nothing from
-  // node_modules enters the bundle (its CSS would fail the CSS guard).
-  deps: { neverBundle: true },
+  // Every npm package is supplied by the shell's module table, except the two
+  // modules the table does not carry: the Remote declaration factory and clsx.
+  // Leaving them external makes the plugin fail silently at materialization.
+  deps: {
+    neverBundle: true,
+    alwaysBundle: [/^@deepseek-ai\/dsh-typert-protocol\//, 'clsx'],
+  },
 })
 
 let code = await readFile('lib/client.cjs', 'utf8')
