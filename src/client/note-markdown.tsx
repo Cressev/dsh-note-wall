@@ -229,8 +229,9 @@ export function applyNoteFormat(area: HTMLTextAreaElement, format: NoteFormat): 
     return next
   }
   const prefix = LINE_PREFIXES[format] ?? ''
-  const lineStart = value.lastIndexOf('\n', start - 1) + 1
-  const lineEndRaw = value.indexOf('\n', end)
+  const lineStart = start === 0 ? 0 : value.lastIndexOf('\n', start - 1) + 1
+  // A selection ending at the beginning of the next line does not include it.
+  const lineEndRaw = value.indexOf('\n', end > start ? end - 1 : end)
   const lineEnd = lineEndRaw === -1 ? value.length : lineEndRaw
   const lines = value.slice(lineStart, lineEnd).split('\n')
   // Toggle over the selected lines: already-formatted (judged by the first
@@ -240,17 +241,39 @@ export function applyNoteFormat(area: HTMLTextAreaElement, format: NoteFormat): 
   const rewritten = already
     ? lines.map(line => line.replace(ANY_PREFIX, ''))
     : lines.map(line => prefix + line.replace(ANY_PREFIX, ''))
-  const next = value.slice(0, lineStart) + rewritten.join('\n') + value.slice(lineEnd)
-  setAreaValue(area, next, lineStart, lineStart + next.length - (value.length - lineEnd))
+  const replacement = rewritten.join('\n')
+  const next = value.slice(0, lineStart) + replacement + value.slice(lineEnd)
+  // Keep the caret or the user's explicit selection on the same text as
+  // prefixes are inserted, removed or replaced. A collapsed caret stays
+  // collapsed so a second click cannot accidentally format following lines.
+  const mapPosition = (position: number): number => {
+    if (position > lineEnd) return lineStart + replacement.length + position - lineEnd
+    let oldOffset = lineStart
+    let newOffset = lineStart
+    for (let i = 0; i < lines.length; i++) {
+      const original = lines[i] ?? ''
+      const updated = rewritten[i] ?? ''
+      if (position <= oldOffset + original.length) {
+        const oldPrefixLength = original.match(ANY_PREFIX)?.[0].length ?? 0
+        const newPrefixLength = already ? 0 : prefix.length
+        const contentOffset = Math.max(0, position - oldOffset - oldPrefixLength)
+        return newOffset + Math.min(updated.length, newPrefixLength + contentOffset)
+      }
+      oldOffset += original.length + 1
+      newOffset += updated.length + 1
+    }
+    return lineStart + replacement.length
+  }
+  setAreaValue(area, next, mapPosition(start), mapPosition(end))
   return next
 }
 
-/** Write a new value into a textarea the way React expects, then select a range. */
+/** Write a React-compatible value and restore the selection synchronously. */
 function setAreaValue(area: HTMLTextAreaElement, next: string, selStart: number, selEnd: number): void {
   const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set
   setter?.call(area, next)
   area.dispatchEvent(new Event('input', { bubbles: true }))
-  requestAnimationFrame(() => { area.setSelectionRange(selStart, selEnd) })
+  area.setSelectionRange(selStart, selEnd)
 }
 
 /** Extract pasted image files from a clipboard event. */

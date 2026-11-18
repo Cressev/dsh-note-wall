@@ -45,7 +45,7 @@ This branch is configured for the owner's Supabase project. `src/client/sync-con
 
 Notes and images are stored in Supabase without application-level end-to-end encryption. Session tokens are stored in the desktop webview's local storage. Local baseline copies for conflict detection are kept in IndexedDB. Back up existing note data before installing the plugin on another device. Upload of a test note from one desktop has been verified; two physical devices have not yet been tested together.
 
-`sync-merge.test.ts`, `sync-controller.test.ts`, and `sync-journal.test.mjs` cover merging, simulated two-device/offline synchronization, and local recovery; they do not replace a real two-device test.
+`sync-merge.test.ts`, `sync-controller.test.ts`, and `sync-journal.test.mjs` cover merging, simulated two-device/offline synchronization, and local recovery; they do not replace a real two-device test. `note-format.test.ts` checks single-line toggles, rapid repeated clicks, and explicit multi-line selections.
 
 ## Storage
 
@@ -58,6 +58,7 @@ pnpm install
 pnpm build        # lib/index.mjs, lib/remote.mjs, lib/client.js
 pnpm typecheck
 node --import tsx/esm --test sync-merge.test.ts sync-controller.test.ts sync-journal.test.mjs
+node --import tsx/esm --test note-format.test.ts
 ```
 
 ## Licence
