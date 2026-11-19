@@ -349,22 +349,23 @@ export function StickyWallPage(props: StickyWallPageProps): ReactNode {
         ? (
             <div className={css.grid}>
               {visible.map((note, index) => (
-                <StickyCard
-                  key={note.id}
-                  note={note}
-                  folder={folderById(note.folderId)}
-                  index={index}
-                  inTrash={filter === 'trash'}
-                  t={t}
-                  colorNames={colorNames}
-                  source={source}
-                  imageUrls={imageUrls}
-                  actions={noteActions}
-                  onEdit={() => { setEditTarget(note) }}
-                  onMove={() => { setMoveTarget(note) }}
-                  onJump={() => { jumpToOrigin(note) }}
-                  onImage={url => { setLightbox(url) }}
-                />
+                <div key={note.id} className={css.cardSlot}>
+                  <StickyCard
+                    note={note}
+                    folder={folderById(note.folderId)}
+                    index={index}
+                    inTrash={filter === 'trash'}
+                    t={t}
+                    colorNames={colorNames}
+                    source={source}
+                    imageUrls={imageUrls}
+                    actions={noteActions}
+                    onEdit={() => { setEditTarget(note) }}
+                    onMove={() => { setMoveTarget(note) }}
+                    onJump={() => { jumpToOrigin(note) }}
+                    onImage={url => { setLightbox(url) }}
+                  />
+                </div>
               ))}
               {visible.length === 0 && (
                 <div className={css.empty}>{filter === 'trash' ? t('emptyTrash') : (query !== '' ? t('noNotesMatch') : t('emptyWall'))}</div>

@@ -6,6 +6,7 @@ export const css: Record<string, string | undefined> = {
   'cardActions': 'sw-stickywallpage-cardActions',
   'cardMenu': 'sw-stickywallpage-cardMenu',
   'cardMeta': 'sw-stickywallpage-cardMeta',
+  'cardSlot': 'sw-stickywallpage-cardSlot',
   'count': 'sw-stickywallpage-count',
   'dot': 'sw-stickywallpage-dot',
   'dotActive': 'sw-stickywallpage-dotActive',
@@ -386,8 +387,19 @@ export const cssText = `/* Sticky wall: candy-colored, rounded, playful but orga
 .sw-stickywallpage-grid {
   columns: 210px;
   column-gap: 14px;
-  align-content: start;
   padding-bottom: 30px;
+}
+
+/* An atomic column item keeps a card and its tape in one fragment, including
+   when editing a note causes the browser to rebalance the columns. */
+.sw-stickywallpage-cardSlot {
+  display: inline-block;
+  vertical-align: top;
+  width: 100%;
+  padding-top: 7px;
+  margin-bottom: 7px;
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
 }
 
 .sw-stickywallpage-card {
@@ -396,7 +408,7 @@ export const cssText = `/* Sticky wall: candy-colored, rounded, playful but orga
   flex-direction: column;
   gap: 8px;
   min-height: 92px;
-  margin: 0 0 14px;
+  margin: 0;
   padding: 14px 13px 10px;
   border-radius: 16px;
   background: var(--card-color, #ffdb4d);
@@ -409,7 +421,6 @@ export const cssText = `/* Sticky wall: candy-colored, rounded, playful but orga
   animation: stick-drop 0.32s cubic-bezier(0.2, 1.4, 0.5, 1) both;
   animation-delay: var(--drop, 0ms);
   overflow: visible;
-  break-inside: avoid;
 }
 
 .sw-stickywallpage-card::before {
